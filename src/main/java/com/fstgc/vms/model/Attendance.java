@@ -1,6 +1,7 @@
 package com.fstgc.vms.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Duration;
 
@@ -117,7 +118,7 @@ public class Attendance {
         if (checkInTime != null && checkOutTime != null) {
             long milliseconds = checkOutTime.getTime() - checkInTime.getTime();
             double hours = milliseconds / (1000.0 * 60 * 60);
-            this.hoursWorked = BigDecimal.valueOf(hours).setScale(2, BigDecimal.ROUND_HALF_UP);
+            this.hoursWorked = BigDecimal.valueOf(hours).setScale(2, RoundingMode.HALF_UP);
         }
     }
 
