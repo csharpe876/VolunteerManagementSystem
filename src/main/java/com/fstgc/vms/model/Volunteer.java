@@ -14,16 +14,22 @@ public class Volunteer {
     private String email;
     private String phone;
     private Timestamp registrationDate;
-    private String status; // 'active' or 'inactive'
+    private boolean isActive;
     private String profilePhotoUrl;
     private LocalDate dateOfBirth;
     private String address;
     private String passwordHash;
+    private String skills;
+    private String emergencyContactName;
+    private String emergencyContactPhone;
+    private double totalHours;
+    private Timestamp lastLogin;
 
     // Constructors
     public Volunteer() {
         this.registrationDate = new Timestamp(System.currentTimeMillis());
-        this.status = "active";
+        this.isActive = true;
+        this.totalHours = 0.0;
     }
 
     public Volunteer(String firstName, String lastName, String email, String phone) {
@@ -35,7 +41,7 @@ public class Volunteer {
     }
 
     public Volunteer(int volunteerId, String firstName, String lastName, String email, 
-                     String phone, Timestamp registrationDate, String status, 
+                     String phone, Timestamp registrationDate, boolean isActive, 
                      String profilePhotoUrl, LocalDate dateOfBirth, String address) {
         this.volunteerId = volunteerId;
         this.firstName = firstName;
@@ -43,10 +49,11 @@ public class Volunteer {
         this.email = email;
         this.phone = phone;
         this.registrationDate = registrationDate;
-        this.status = status;
+        this.isActive = isActive;
         this.profilePhotoUrl = profilePhotoUrl;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
+        this.totalHours = 0.0;
     }
 
     // Getters and Setters
@@ -98,12 +105,12 @@ public class Volunteer {
         this.registrationDate = registrationDate;
     }
 
-    public String getStatus() {
-        return status;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     public String getProfilePhotoUrl() {
@@ -138,13 +145,49 @@ public class Volunteer {
         this.passwordHash = passwordHash;
     }
 
+    public String getSkills() {
+        return skills;
+    }
+
+    public void setSkills(String skills) {
+        this.skills = skills;
+    }
+
+    public String getEmergencyContactName() {
+        return emergencyContactName;
+    }
+
+    public void setEmergencyContactName(String emergencyContactName) {
+        this.emergencyContactName = emergencyContactName;
+    }
+
+    public String getEmergencyContactPhone() {
+        return emergencyContactPhone;
+    }
+
+    public void setEmergencyContactPhone(String emergencyContactPhone) {
+        this.emergencyContactPhone = emergencyContactPhone;
+    }
+
+    public double getTotalHours() {
+        return totalHours;
+    }
+
+    public void setTotalHours(double totalHours) {
+        this.totalHours = totalHours;
+    }
+
+    public Timestamp getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Timestamp lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
     // Utility Methods
     public String getFullName() {
         return firstName + " " + lastName;
-    }
-
-    public boolean isActive() {
-        return "active".equals(status);
     }
 
     @Override
@@ -155,7 +198,8 @@ public class Volunteer {
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
-                ", status='" + status + '\'' +
+                ", isActive=" + isActive +
+                ", totalHours=" + totalHours +
                 '}';
     }
 

@@ -134,7 +134,7 @@ public class VolunteerRepository {
             stmt.setDate(5, volunteer.getDateOfBirth() != null ? Date.valueOf(volunteer.getDateOfBirth()) : null);
             stmt.setString(6, volunteer.getAddress());
             stmt.setString(7, volunteer.getProfilePhotoUrl());
-            stmt.setString(8, volunteer.getStatus());
+            stmt.setBoolean(8, volunteer.isActive());
             stmt.setInt(9, volunteer.getVolunteerId());
             
             stmt.executeUpdate();
@@ -219,7 +219,7 @@ public class VolunteerRepository {
         volunteer.setEmail(rs.getString("email"));
         volunteer.setPhone(rs.getString("phone"));
         volunteer.setRegistrationDate(rs.getTimestamp("registration_date"));
-        volunteer.setStatus(rs.getString("status"));
+        volunteer.setActive(rs.getBoolean("is_active"));
         volunteer.setProfilePhotoUrl(rs.getString("profile_photo_url"));
         
         Date dob = rs.getDate("date_of_birth");

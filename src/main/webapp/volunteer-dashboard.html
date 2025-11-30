@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Dashboard - VMS</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <img src="images/fst-guild-logo.png" alt="FST Logo" class="sidebar-logo">
+                <h2>VMS</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('events')">
+                    <span class="icon">📅</span>
+                    <span>Events</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('timesheet')">
+                    <span class="icon">⏱️</span>
+                    <span>Timesheet</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('awards')">
+                    <span class="icon">🏆</span>
+                    <span>Awards</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('profile')">
+                    <span class="icon">👤</span>
+                    <span>Profile</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn" onclick="logout()">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1 id="page-title">Dashboard</h1>
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <div class="user-avatar" id="user-avatar">V</div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <h3 id="total-hours">0</h3>
+                            <p>Total Hours</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3 id="events-attended">0</h3>
+                            <p>Events Attended</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-info">
+                            <h3 id="awards-earned">0</h3>
+                            <p>Awards Earned</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info">
+                            <h3 id="volunteer-rank">#-</h3>
+                            <p>Ranking</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <h2>Upcoming Events</h2>
+                        <div id="upcoming-events" class="events-list">
+                            <p class="loading">Loading events...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Recent Announcements</h2>
+                        <div id="announcements" class="announcements-list">
+                            <p class="loading">Loading announcements...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Events Section -->
+            <section id="events-section" class="content-section">
+                <div class="section-header">
+                    <h2>Available Events</h2>
+                    <div class="filters">
+                        <select id="event-filter" onchange="filterEvents()">
+                            <option value="all">All Events</option>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="registered">My Registered</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="events-grid" class="events-grid">
+                    <p class="loading">Loading events...</p>
+                </div>
+            </section>
+
+            <!-- Timesheet Section -->
+            <section id="timesheet-section" class="content-section">
+                <div class="card">
+                    <h2>My Timesheet</h2>
+                    <div class="timesheet-controls">
+                        <select id="month-filter">
+                            <option value="all">All Time</option>
+                            <option value="0">This Month</option>
+                            <option value="1">Last Month</option>
+                        </select>
+                        <button onclick="exportTimesheet()" class="btn-secondary">Export PDF</button>
+                    </div>
+                    <div id="timesheet-table" class="table-container">
+                        <p class="loading">Loading timesheet...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Awards Section -->
+            <section id="awards-section" class="content-section">
+                <div class="card">
+                    <h2>My Awards & Badges</h2>
+                    <div id="awards-grid" class="awards-grid">
+                        <p class="loading">Loading awards...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile-section" class="content-section">
+                <div class="card">
+                    <h2>My Profile</h2>
+                    <form id="profile-form" class="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" id="profile-firstname" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" id="profile-lastname" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="profile-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" id="profile-phone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Skills</label>
+                            <textarea id="profile-skills" rows="3"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Changes</button>
+                            <button type="button" onclick="showChangePassword()" class="btn-secondary">Change Password</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/volunteer-dashboard.js"></script>
+</body>
+</html>

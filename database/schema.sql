@@ -21,13 +21,18 @@ CREATE TABLE Volunteer (
     email VARCHAR(100) UNIQUE NOT NULL,
     phone VARCHAR(20),
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('active', 'inactive') DEFAULT 'active',
+    is_active BOOLEAN DEFAULT TRUE,
     profile_photo_url VARCHAR(255),
     date_of_birth DATE,
     address TEXT,
-    password_hash VARCHAR(255),
+    password_hash VARCHAR(255) NOT NULL,
+    skills TEXT,
+    emergency_contact_name VARCHAR(100),
+    emergency_contact_phone VARCHAR(20),
+    total_hours DECIMAL(10, 2) DEFAULT 0,
+    last_login TIMESTAMP NULL,
     INDEX idx_email (email),
-    INDEX idx_status (status)
+    INDEX idx_active (is_active)
 );
 
 -- SystemAdmin Table

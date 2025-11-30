@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - VMS</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <img src="images/fst-guild-logo.png" alt="FST Logo" class="sidebar-logo">
+                <h2>VMS Admin</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('volunteers')">
+                    <span class="icon">👥</span>
+                    <span>Volunteers</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('events')">
+                    <span class="icon">📅</span>
+                    <span>Events</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('attendance')">
+                    <span class="icon">✅</span>
+                    <span>Attendance</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('announcements')">
+                    <span class="icon">📢</span>
+                    <span>Announcements</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('awards')">
+                    <span class="icon">🏆</span>
+                    <span>Awards</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('reports')">
+                    <span class="icon">📈</span>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn" onclick="logout()">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1 id="page-title">Admin Dashboard</h1>
+                <div class="user-info">
+                    <span id="user-name">Loading...</span>
+                    <div class="user-avatar" id="user-avatar">A</div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="total-volunteers">0</h3>
+                            <p>Total Volunteers</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3 id="total-events">0</h3>
+                            <p>Total Events</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <h3 id="total-hours">0</h3>
+                            <p>Total Hours Logged</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3 id="active-volunteers">0</h3>
+                            <p>Active Volunteers</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <h2>Recent Activities</h2>
+                        <div id="recent-activities" class="activities-list">
+                            <p class="loading">Loading activities...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Upcoming Events</h2>
+                        <div id="upcoming-events" class="events-list">
+                            <p class="loading">Loading events...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Volunteers Section -->
+            <section id="volunteers-section" class="content-section">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>Manage Volunteers</h2>
+                        <button onclick="showAddVolunteerModal()" class="btn-primary">+ Add Volunteer</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="volunteers-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Total Hours</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" class="loading">Loading volunteers...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Events Section -->
+            <section id="events-section" class="content-section">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>Manage Events</h2>
+                        <button onclick="showAddEventModal()" class="btn-primary">+ Create Event</button>
+                    </div>
+                    <div id="events-grid" class="events-grid">
+                        <p class="loading">Loading events...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Announcements Section -->
+            <section id="announcements-section" class="content-section">
+                <div class="card">
+                    <div class="section-header">
+                        <h2>Manage Announcements</h2>
+                        <button onclick="showAddAnnouncementModal()" class="btn-primary">+ New Announcement</button>
+                    </div>
+                    <div id="announcements-list">
+                        <p class="loading">Loading announcements...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other sections placeholders -->
+            <section id="attendance-section" class="content-section">
+                <div class="card">
+                    <h2>Attendance Management</h2>
+                    <p>Attendance tracking feature - Coming soon</p>
+                </div>
+            </section>
+
+            <section id="awards-section" class="content-section">
+                <div class="card">
+                    <h2>Awards Management</h2>
+                    <p>Awards and badges management - Coming soon</p>
+                </div>
+            </section>
+
+            <section id="reports-section" class="content-section">
+                <div class="card">
+                    <h2>Reports & Analytics</h2>
+                    <p>Comprehensive reporting system - Coming soon</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>
