@@ -1,218 +1,51 @@
 package com.fstgc.vms.model;
 
-import java.sql.Timestamp;
+import com.fstgc.vms.model.enums.BadgeTier;
+import com.fstgc.vms.model.enums.VolunteerStatus;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-/**
- * Volunteer Entity Model
- * Represents a volunteer in the system
- */
-public class Volunteer {
-    private int volunteerId;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phone;
-    private Timestamp registrationDate;
-    private boolean isActive;
+public class Volunteer extends Person {
+    private LocalDateTime registrationDate = LocalDateTime.now();
+    private VolunteerStatus status = VolunteerStatus.ACTIVE;
     private String profilePhotoUrl;
     private LocalDate dateOfBirth;
     private String address;
-    private String passwordHash;
-    private String skills;
-    private String emergencyContactName;
-    private String emergencyContactPhone;
-    private double totalHours;
-    private Timestamp lastLogin;
+    // Number of events this volunteer has attended; new volunteers start at 0
+    private int eventsAttended = 0;
+    private String lastModifiedBy;
+    private LocalDateTime lastModifiedDate;
+    private int badgesEarned = 0;
+    private BadgeTier currentTier = null; // Achievement tier based on total hours worked
 
-    // Constructors
-    public Volunteer() {
-        this.registrationDate = new Timestamp(System.currentTimeMillis());
-        this.isActive = true;
-        this.totalHours = 0.0;
-    }
+    public LocalDateTime getRegistrationDate() { return registrationDate; }
+    public void setRegistrationDate(LocalDateTime registrationDate) { this.registrationDate = registrationDate; }
+    public VolunteerStatus getStatus() { return status; }
+    public void setStatus(VolunteerStatus status) { this.status = status; }
+    public String getProfilePhotoUrl() { return profilePhotoUrl; }
+    public void setProfilePhotoUrl(String profilePhotoUrl) { this.profilePhotoUrl = profilePhotoUrl; }
+    public LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public Volunteer(String firstName, String lastName, String email, String phone) {
-        this();
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-    }
+    public int getEventsAttended() { return eventsAttended; }
+    public void setEventsAttended(int eventsAttended) { this.eventsAttended = eventsAttended; }
 
-    public Volunteer(int volunteerId, String firstName, String lastName, String email, 
-                     String phone, Timestamp registrationDate, boolean isActive, 
-                     String profilePhotoUrl, LocalDate dateOfBirth, String address) {
-        this.volunteerId = volunteerId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.registrationDate = registrationDate;
-        this.isActive = isActive;
-        this.profilePhotoUrl = profilePhotoUrl;
-        this.dateOfBirth = dateOfBirth;
-        this.address = address;
-        this.totalHours = 0.0;
-    }
-
-    // Getters and Setters
-    public int getVolunteerId() {
-        return volunteerId;
-    }
-
-    public void setVolunteerId(int volunteerId) {
-        this.volunteerId = volunteerId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public Timestamp getRegistrationDate() {
-        return registrationDate;
-    }
-
-    public void setRegistrationDate(Timestamp registrationDate) {
-        this.registrationDate = registrationDate;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public String getProfilePhotoUrl() {
-        return profilePhotoUrl;
-    }
-
-    public void setProfilePhotoUrl(String profilePhotoUrl) {
-        this.profilePhotoUrl = profilePhotoUrl;
-    }
-
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public String getSkills() {
-        return skills;
-    }
-
-    public void setSkills(String skills) {
-        this.skills = skills;
-    }
-
-    public String getEmergencyContactName() {
-        return emergencyContactName;
-    }
-
-    public void setEmergencyContactName(String emergencyContactName) {
-        this.emergencyContactName = emergencyContactName;
-    }
-
-    public String getEmergencyContactPhone() {
-        return emergencyContactPhone;
-    }
-
-    public void setEmergencyContactPhone(String emergencyContactPhone) {
-        this.emergencyContactPhone = emergencyContactPhone;
-    }
-
-    public double getTotalHours() {
-        return totalHours;
-    }
-
-    public void setTotalHours(double totalHours) {
-        this.totalHours = totalHours;
-    }
-
-    public Timestamp getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Timestamp lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    // Utility Methods
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
-
-    @Override
-    public String toString() {
-        return "Volunteer{" +
-                "volunteerId=" + volunteerId +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", isActive=" + isActive +
-                ", totalHours=" + totalHours +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Volunteer volunteer = (Volunteer) o;
-        return volunteerId == volunteer.volunteerId;
-    }
-
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(volunteerId);
+    public String getLastModifiedBy() { return lastModifiedBy; }
+    public void setLastModifiedBy(String lastModifiedBy) { this.lastModifiedBy = lastModifiedBy; }
+    public LocalDateTime getLastModifiedDate() { return lastModifiedDate; }
+    public void setLastModifiedDate(LocalDateTime lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
+    public int getBadgesEarned() { return badgesEarned; }
+    public void setBadgesEarned(int badgesEarned) { this.badgesEarned = badgesEarned; }
+    
+    public BadgeTier getCurrentTier() { return currentTier; }
+    public void setCurrentTier(BadgeTier currentTier) { this.currentTier = currentTier; }
+    
+    // Placeholder for total hours calculation - in production this would aggregate from attendance records
+    public double getTotalHoursWorked() {
+        // This is a placeholder. In a real system, this would query attendance records
+        // For now, return 0 hours for all volunteers initially
+        return 0.0;
     }
 }

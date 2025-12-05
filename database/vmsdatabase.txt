@@ -1,0 +1,244 @@
+{
+  "volunteers": {
+    "2": {
+      "registrationDate": "2025-12-03T15:01:31.3885222",
+      "status": "ACTIVE",
+      "eventsAttended": 0,
+      "lastModifiedBy": "System",
+      "lastModifiedDate": "2025-12-03T15:01:31.3925064",
+      "badgesEarned": 0,
+      "id": 2,
+      "firstName": "Carl",
+      "lastName": "Sharpe",
+      "email": "carl.sharpe@test.com",
+      "phone": "18761234567"
+    },
+    "3": {
+      "registrationDate": "2025-12-03T18:14:13.1419409",
+      "status": "ACTIVE",
+      "eventsAttended": 0,
+      "badgesEarned": 0,
+      "id": 3,
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@test.com",
+      "phone": "18769999999"
+    }
+  },
+  "events": {
+    "1": {
+      "eventId": 1,
+      "title": "Christmas Day Outreach Programme",
+      "eventDate": "2025-12-25",
+      "location": "UWI Mona",
+      "capacity": 98,
+      "currentRegistrations": 2,
+      "eventType": "COMMUNITY_SERVICE",
+      "status": "PUBLISHED",
+      "createdByAdminId": 0,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2025-12-03T15:55:58.8263343"
+    },
+    "2": {
+      "eventId": 2,
+      "title": "Coastal Clean-Up",
+      "eventDate": "2025-12-28",
+      "location": "Hellshire Beach",
+      "capacity": 249,
+      "currentRegistrations": 1,
+      "eventType": "COMMUNITY_SERVICE",
+      "status": "PUBLISHED",
+      "createdByAdminId": 0,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2025-12-03T15:56:08.6087442"
+    },
+    "3": {
+      "eventId": 3,
+      "title": "Labor Day Campus Clean-Up",
+      "eventDate": "2025-10-20",
+      "location": "Faculty Of Science \u0026 Technology, UWI Mona",
+      "capacity": 48,
+      "currentRegistrations": 2,
+      "eventType": "COMMUNITY_SERVICE",
+      "status": "COMPLETED",
+      "createdByAdminId": 0,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2025-12-03T15:06:23.3738826"
+    }
+  },
+  "attendance": {
+    "1": {
+      "attendanceId": 1,
+      "volunteerId": 2,
+      "eventId": 2,
+      "checkInTime": "2025-12-03T15:39:55.1188831",
+      "status": "PRESENT",
+      "hoursWorked": 50.0,
+      "lastModifiedBy": "csharpe",
+      "lastModifiedDate": "2025-12-03T17:51:35.6606877"
+    },
+    "2": {
+      "attendanceId": 2,
+      "volunteerId": 3,
+      "eventId": 3,
+      "checkInTime": "2025-12-03T18:16:25.4168153",
+      "status": "PRESENT",
+      "hoursWorked": 20.0
+    },
+    "3": {
+      "attendanceId": 3,
+      "volunteerId": 2,
+      "eventId": 1,
+      "checkInTime": "2025-12-03T19:14:18.8944947",
+      "hoursWorked": 0.0
+    }
+  },
+  "announcements": {
+    "1": {
+      "announcementId": 1,
+      "title": "Test",
+      "message": "testing functionality",
+      "publishedDate": "2025-12-03T18:17:44.1311055",
+      "priority": "HIGH",
+      "targetAudience": "ALL",
+      "createdByAdminId": 0,
+      "deleted": false
+    },
+    "2": {
+      "announcementId": 2,
+      "title": "Test 2",
+      "message": "Test number 2 of functionality",
+      "publishedDate": "2025-12-03T19:30:33.3799857",
+      "priority": "URGENT",
+      "targetAudience": "ALL",
+      "createdByAdminId": 0,
+      "deleted": false,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2025-12-03T19:30:54.664814"
+    }
+  },
+  "timesheets": {
+    "4": {
+      "timesheetId": 4,
+      "volunteerId": 3,
+      "eventId": 3,
+      "eventName": "Labor Day Campus Clean-Up",
+      "periodStartDate": "2025-10-20",
+      "periodEndDate": "2025-10-20",
+      "totalHours": 20.0,
+      "approvedHours": 20.0,
+      "approvalStatus": "APPROVED",
+      "approvedByAdminId": 1,
+      "approvalDate": "2025-12-03T19:29:15.0698271",
+      "createdDate": "2025-12-03T18:16:25.4168153"
+    },
+    "1": {
+      "timesheetId": 1,
+      "volunteerId": 2,
+      "eventId": 2,
+      "eventName": "Coastal Clean-Up",
+      "periodStartDate": "2025-12-28",
+      "periodEndDate": "2025-12-28",
+      "totalHours": 0.0,
+      "approvalStatus": "PENDING",
+      "createdDate": "2025-12-03T15:39:55.1296024"
+    },
+    "6": {
+      "timesheetId": 6,
+      "volunteerId": 2,
+      "eventId": 1,
+      "eventName": "Christmas Day Outreach Programme",
+      "periodStartDate": "2025-12-25",
+      "periodEndDate": "2025-12-25",
+      "totalHours": 0.0,
+      "approvalStatus": "PENDING",
+      "createdDate": "2025-12-03T19:14:18.8995716"
+    }
+  },
+  "admins": {
+    "1": {
+      "username": "admin",
+      "passwordHash": "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk\u003d",
+      "role": "SUPER_ADMIN",
+      "lastLogin": "2025-12-03T19:55:46.5984834",
+      "failedLoginAttempts": 0,
+      "accountStatus": "ACTIVE",
+      "createdDate": "2025-12-02T21:50:19.3207691",
+      "id": 1,
+      "firstName": "System",
+      "lastName": "Administrator",
+      "email": "admin@vms.com",
+      "phone": "555-0100"
+    },
+    "2": {
+      "username": "csharpe",
+      "passwordHash": "75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8\u003d",
+      "role": "VOLUNTEER",
+      "lastLogin": "2025-12-03T19:35:37.5720695",
+      "failedLoginAttempts": 0,
+      "accountStatus": "ACTIVE",
+      "createdDate": "2025-12-02T23:43:47.4293635",
+      "id": 2,
+      "firstName": "Carl",
+      "lastName": "Sharpe",
+      "email": "carl.sharpe@test.com",
+      "phone": "18761234567"
+    },
+    "3": {
+      "username": "testuser",
+      "passwordHash": "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg\u003d",
+      "role": "VOLUNTEER",
+      "lastLogin": "2025-12-03T18:18:23.5469661",
+      "failedLoginAttempts": 0,
+      "accountStatus": "ACTIVE",
+      "createdDate": "2025-12-03T18:14:13.1389079",
+      "id": 3,
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@test.com",
+      "phone": "18769999999"
+    }
+  },
+  "awards": {
+    "1": {
+      "awardId": 1,
+      "volunteerId": 2,
+      "badgeName": "First Steps",
+      "badgeDescription": "Completed 10 hours of volunteer work",
+      "criteriaId": -855724681,
+      "dateEarned": "2025-12-03T17:51:06.6894333",
+      "badgeTier": "BRONZE",
+      "featured": false
+    },
+    "2": {
+      "awardId": 2,
+      "volunteerId": 2,
+      "badgeName": "Dedicated Helper",
+      "badgeDescription": "Completed 25 hours of volunteer work",
+      "criteriaId": -1297223873,
+      "dateEarned": "2025-12-03T17:51:36.7707686",
+      "badgeTier": "BRONZE",
+      "featured": false
+    },
+    "3": {
+      "awardId": 3,
+      "volunteerId": 2,
+      "badgeName": "Community Champion",
+      "badgeDescription": "Completed 50 hours of volunteer work",
+      "criteriaId": 1744481024,
+      "dateEarned": "2025-12-03T17:51:36.7772195",
+      "badgeTier": "SILVER",
+      "featured": false
+    },
+    "4": {
+      "awardId": 4,
+      "volunteerId": 3,
+      "badgeName": "First Steps",
+      "badgeDescription": "Completed 10 hours of volunteer work",
+      "criteriaId": -855724681,
+      "dateEarned": "2025-12-03T18:16:27.1446307",
+      "badgeTier": "BRONZE",
+      "featured": false
+    }
+  }
+}

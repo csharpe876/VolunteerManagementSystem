@@ -6,12 +6,12 @@ import com.fstgc.vms.service.VolunteerService;
 import com.google.gson.Gson;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -56,8 +56,11 @@ public class LoginController extends HttpServlet {
                 return;
             }
 
+            System.out.println("Login attempt - Username: " + username);
+            
             // Try to authenticate as admin first
             SystemAdmin admin = authenticateAdmin(username, password);
+            System.out.println("Admin authentication result: " + (admin != null ? "SUCCESS" : "FAILED"));
             if (admin != null) {
                 // Create session
                 HttpSession session = request.getSession(true);
@@ -159,6 +162,8 @@ public class LoginController extends HttpServlet {
     private SystemAdmin authenticateAdmin(String username, String password) throws SQLException {
         String query = "SELECT * FROM SystemAdmin WHERE (username = ? OR email = ?) AND account_status = 'active'";
         
+        System.out.println("Authenticating admin: " + username);
+        
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             
@@ -167,8 +172,11 @@ public class LoginController extends HttpServlet {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    System.out.println("Admin user found in database");
                     String storedHash = rs.getString("password_hash");
+                    System.out.println("Checking password against BCrypt hash...");
                     if (BCrypt.checkpw(password, storedHash)) {
+                        System.out.println("Password matched!");
                         SystemAdmin admin = new SystemAdmin();
                         admin.setAdminId(rs.getInt("admin_id"));
                         admin.setUsername(rs.getString("username"));

@@ -2,126 +2,97 @@ package com.fstgc.vms.service;
 
 import com.fstgc.vms.model.Attendance;
 import com.fstgc.vms.model.Timesheet;
+import com.fstgc.vms.model.enums.TimesheetStatus;
 import com.fstgc.vms.repository.AttendanceRepository;
 import com.fstgc.vms.repository.TimesheetRepository;
-
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Timesheet Service Layer
- * Contains business logic for timesheet operations
- */
 public class TimesheetService {
-    private final TimesheetRepository timesheetRepository;
-    private final AttendanceRepository attendanceRepository;
+    private final TimesheetRepository timesheets;
+    private final AttendanceRepository attendance;
 
-    public TimesheetService() {
-        this.timesheetRepository = new TimesheetRepository();
-        this.attendanceRepository = new AttendanceRepository();
+    public TimesheetService(TimesheetRepository timesheets, AttendanceRepository attendance) {
+        this.timesheets = timesheets;
+        this.attendance = attendance;
     }
 
-    public Timesheet generateTimesheet(int volunteerId, Date startDate, Date endDate) throws SQLException {
-        // Get all attendance records for the volunteer in the period
-        List<Attendance> attendanceRecords = attendanceRepository.findByVolunteer(volunteerId);
-        
-        // Filter by date range and calculate total hours
-        BigDecimal totalHours = BigDecimal.ZERO;
-        for (Attendance attendance : attendanceRecords) {
-            Date checkInDate = new Date(attendance.getCheckInTime().getTime());
-            if (!checkInDate.before(startDate) && !checkInDate.after(endDate)) {
-                if (attendance.getHoursWorked() != null) {
-                    totalHours = totalHours.add(attendance.getHoursWorked());
-                }
-            }
-        }
-        
-        // Create timesheet
-        Timesheet timesheet = new Timesheet(volunteerId, startDate, endDate);
-        timesheet.setTotalHours(totalHours);
-        
-        return timesheetRepository.save(timesheet);
+    public Timesheet generate(int volunteerId, LocalDate start, LocalDate end) {
+        Timesheet t = new Timesheet();
+        t.setVolunteerId(volunteerId);
+        t.setPeriodStartDate(start);
+        t.setPeriodEndDate(end);
+        double total = attendance.findByVolunteer(volunteerId).stream()
+                .filter(a -> a.getCheckInTime()!=null && !a.getCheckInTime().toLocalDate().isBefore(start) && a.getCheckOutTime()!=null && !a.getCheckOutTime().toLocalDate().isAfter(end))
+                .mapToDouble(Attendance::getHoursWorked).sum();
+        t.setTotalHours(Math.round(total*100.0)/100.0);
+        return timesheets.save(t);
+    }
+    
+    public Timesheet submit(int volunteerId, LocalDate start, LocalDate end, TimesheetStatus status) {
+        Timesheet t = new Timesheet();
+        t.setVolunteerId(volunteerId);
+        t.setPeriodStartDate(start);
+        t.setPeriodEndDate(end);
+        double total = attendance.findByVolunteer(volunteerId).stream()
+                .filter(a -> a.getCheckInTime()!=null && !a.getCheckInTime().toLocalDate().isBefore(start) && a.getCheckOutTime()!=null && !a.getCheckOutTime().toLocalDate().isAfter(end))
+                .mapToDouble(Attendance::getHoursWorked).sum();
+        t.setTotalHours(Math.round(total*100.0)/100.0);
+        t.setApprovalStatus(status);
+        return timesheets.save(t);
     }
 
-    public Timesheet getTimesheetById(int timesheetId) throws SQLException {
-        Timesheet timesheet = timesheetRepository.findById(timesheetId);
-        if (timesheet == null) {
-            throw new IllegalArgumentException("Timesheet not found");
-        }
-        return timesheet;
+    public Timesheet approve(int timesheetId, int adminId) {
+        Timesheet t = timesheets.findById(timesheetId).orElseThrow();
+        t.setApprovalStatus(TimesheetStatus.APPROVED);
+        t.setApprovedByAdminId(adminId);
+        t.setApprovedHours(t.getTotalHours());
+        t.setApprovalDate(LocalDateTime.now());
+        return timesheets.update(t);
     }
 
-    public List<Timesheet> getTimesheetsByVolunteer(int volunteerId) throws SQLException {
-        return timesheetRepository.findByVolunteer(volunteerId);
+    public Timesheet reject(int timesheetId, int adminId, String reason) {
+        Timesheet t = timesheets.findById(timesheetId).orElseThrow();
+        t.setApprovalStatus(TimesheetStatus.REJECTED);
+        t.setApprovedByAdminId(adminId);
+        t.setRejectionReason(reason);
+        t.setApprovalDate(LocalDateTime.now());
+        return timesheets.update(t);
     }
-
-    public List<Timesheet> getPendingTimesheets() throws SQLException {
-        return timesheetRepository.findPendingApprovals();
+    
+    /**
+     * Submit timesheet for a specific event
+     */
+    public Timesheet submitForEvent(int volunteerId, int eventId, String eventName) {
+        // Find attendance record for this volunteer and event
+        Attendance attendanceRecord = attendance.findByVolunteer(volunteerId).stream()
+            .filter(a -> a.getEventId() == eventId)
+            .filter(a -> a.getCheckInTime() != null && a.getCheckOutTime() != null)
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("No completed attendance record found for this event"));
+        
+        Timesheet t = new Timesheet();
+        t.setVolunteerId(volunteerId);
+        t.setAttendanceId(attendanceRecord.getAttendanceId()); // Link to attendance record
+        t.setEventId(eventId);
+        t.setEventName(eventName);
+        t.setPeriodStartDate(attendanceRecord.getCheckInTime().toLocalDate());
+        t.setPeriodEndDate(attendanceRecord.getCheckOutTime().toLocalDate());
+        t.setTotalHours(Math.round(attendanceRecord.getHoursWorked() * 100.0) / 100.0);
+        t.setApprovalStatus(TimesheetStatus.PENDING);
+        return timesheets.save(t);
     }
-
-    public List<Timesheet> getTimesheetsByStatus(String status) throws SQLException {
-        return timesheetRepository.findByStatus(status);
+    
+    public void update(Timesheet timesheet) {
+        timesheets.update(timesheet);
     }
-
-    public List<Timesheet> getAllTimesheets() throws SQLException {
-        return timesheetRepository.findAll();
+    
+    public boolean delete(int timesheetId) {
+        return timesheets.delete(timesheetId);
     }
-
-    public boolean approveTimesheet(int timesheetId, int approvedBy) throws SQLException {
-        Timesheet timesheet = timesheetRepository.findById(timesheetId);
-        if (timesheet == null) {
-            throw new IllegalArgumentException("Timesheet not found");
-        }
-        
-        if (!timesheet.isPending()) {
-            throw new IllegalArgumentException("Timesheet is not pending approval");
-        }
-        
-        return timesheetRepository.approve(timesheetId, approvedBy);
-    }
-
-    public boolean rejectTimesheet(int timesheetId, int rejectedBy, String reason) throws SQLException {
-        Timesheet timesheet = timesheetRepository.findById(timesheetId);
-        if (timesheet == null) {
-            throw new IllegalArgumentException("Timesheet not found");
-        }
-        
-        if (!timesheet.isPending()) {
-            throw new IllegalArgumentException("Timesheet is not pending approval");
-        }
-        
-        if (reason == null || reason.trim().isEmpty()) {
-            throw new IllegalArgumentException("Rejection reason is required");
-        }
-        
-        return timesheetRepository.reject(timesheetId, rejectedBy, reason);
-    }
-
-    public Timesheet updateTimesheet(Timesheet timesheet) throws SQLException {
-        Timesheet existing = timesheetRepository.findById(timesheet.getTimesheetId());
-        if (existing == null) {
-            throw new IllegalArgumentException("Timesheet not found");
-        }
-        
-        if (existing.isApproved()) {
-            throw new IllegalArgumentException("Cannot update an approved timesheet");
-        }
-        
-        return timesheetRepository.update(timesheet);
-    }
-
-    public boolean deleteTimesheet(int timesheetId) throws SQLException {
-        Timesheet timesheet = timesheetRepository.findById(timesheetId);
-        if (timesheet == null) {
-            throw new IllegalArgumentException("Timesheet not found");
-        }
-        
-        if (timesheet.isApproved()) {
-            throw new IllegalArgumentException("Cannot delete an approved timesheet");
-        }
-        
-        return timesheetRepository.delete(timesheetId);
+    
+    public List<Timesheet> listAll() {
+        return timesheets.findAll();
     }
 }

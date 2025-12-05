@@ -2,223 +2,69 @@ package com.fstgc.vms.controller;
 
 import com.fstgc.vms.model.Timesheet;
 import com.fstgc.vms.service.TimesheetService;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import java.time.LocalDate;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
+public class TimesheetController {
+    private final TimesheetService service;
 
-@WebServlet("/api/timesheets/*")
-public class TimesheetController extends HttpServlet {
-    private TimesheetService timesheetService;
-    private Gson gson;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        timesheetService = new TimesheetService();
-        gson = new Gson();
+    public TimesheetController(TimesheetService service) {
+        this.service = service;
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        String pathInfo = request.getPathInfo();
-        String volunteerId = request.getParameter("volunteerId");
-        String status = request.getParameter("status");
-
-        try {
-            // Get timesheets by volunteer
-            if (volunteerId != null) {
-                int volId = Integer.parseInt(volunteerId);
-                List<Timesheet> timesheets = timesheetService.getTimesheetsByVolunteer(volId);
-                sendJsonResponse(response, HttpServletResponse.SC_OK, timesheets);
-                return;
-            }
-
-            // Get pending timesheets
-            if (pathInfo != null && pathInfo.equals("/pending")) {
-                List<Timesheet> timesheets = timesheetService.getPendingTimesheets();
-                sendJsonResponse(response, HttpServletResponse.SC_OK, timesheets);
-                return;
-            }
-
-            // Get timesheets by status
-            if (status != null) {
-                List<Timesheet> timesheets = timesheetService.getTimesheetsByStatus(status);
-                sendJsonResponse(response, HttpServletResponse.SC_OK, timesheets);
-                return;
-            }
-
-            // Get all timesheets
-            if (pathInfo == null || pathInfo.equals("/")) {
-                List<Timesheet> timesheets = timesheetService.getAllTimesheets();
-                sendJsonResponse(response, HttpServletResponse.SC_OK, timesheets);
-                return;
-            }
-
-            // Get timesheet by ID
-            String[] pathParts = pathInfo.split("/");
-            if (pathParts.length == 2) {
-                try {
-                    int timesheetId = Integer.parseInt(pathParts[1]);
-                    Timesheet timesheet = timesheetService.getTimesheetById(timesheetId);
-                    sendJsonResponse(response, HttpServletResponse.SC_OK, timesheet);
-                } catch (NumberFormatException e) {
-                    sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid timesheet ID format");
-                } catch (IllegalArgumentException e) {
-                    sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-                }
-                return;
-            }
-
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                            "Database error: " + e.getMessage());
-        }
+    /**
+     * Generate a timesheet for a volunteer for a specific period
+     */
+    public Timesheet generate(int volunteerId, LocalDate start, LocalDate end) {
+        return service.generate(volunteerId, start, end);
     }
 
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        String pathInfo = request.getPathInfo();
-        
-        if (pathInfo == null || pathInfo.equals("/")) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Timesheet ID is required");
-            return;
-        }
-
-        try {
-            String[] pathParts = pathInfo.split("/");
-            
-            // Approve timesheet
-            if (pathParts.length >= 3 && pathParts[2].equals("approve")) {
-                int timesheetId = Integer.parseInt(pathParts[1]);
-                
-                JsonObject requestBody = gson.fromJson(request.getReader(), JsonObject.class);
-                int approvedBy = requestBody.get("approvedBy").getAsInt();
-                
-                timesheetService.approveTimesheet(timesheetId, approvedBy);
-                
-                JsonObject responseObj = new JsonObject();
-                responseObj.addProperty("message", "Timesheet approved successfully");
-                sendJsonResponse(response, HttpServletResponse.SC_OK, responseObj);
-                return;
-            }
-            
-            // Reject timesheet
-            if (pathParts.length >= 3 && pathParts[2].equals("reject")) {
-                int timesheetId = Integer.parseInt(pathParts[1]);
-                
-                JsonObject requestBody = gson.fromJson(request.getReader(), JsonObject.class);
-                int rejectedBy = requestBody.get("rejectedBy").getAsInt();
-                String reason = requestBody.get("reason").getAsString();
-                
-                timesheetService.rejectTimesheet(timesheetId, rejectedBy, reason);
-                
-                JsonObject responseObj = new JsonObject();
-                responseObj.addProperty("message", "Timesheet rejected");
-                sendJsonResponse(response, HttpServletResponse.SC_OK, responseObj);
-                return;
-            }
-            
-            // Update timesheet
-            if (pathParts.length == 2) {
-                int timesheetId = Integer.parseInt(pathParts[1]);
-                
-                Timesheet timesheet = gson.fromJson(request.getReader(), Timesheet.class);
-                timesheet.setTimesheetId(timesheetId);
-                
-                Timesheet updatedTimesheet = timesheetService.updateTimesheet(timesheet);
-                sendJsonResponse(response, HttpServletResponse.SC_OK, updatedTimesheet);
-            } else {
-                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
-            }
-
-        } catch (NumberFormatException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid timesheet ID format");
-        } catch (IllegalArgumentException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                            "Database error: " + e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, 
-                            "Invalid request body: " + e.getMessage());
-        }
+    /**
+     * Submit a timesheet for a specific period with a status
+     */
+    public Timesheet submit(int volunteerId, LocalDate start, LocalDate end, 
+                          com.fstgc.vms.model.enums.TimesheetStatus status) {
+        return service.submit(volunteerId, start, end, status);
     }
 
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        String pathInfo = request.getPathInfo();
-        
-        if (pathInfo == null || pathInfo.equals("/")) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Timesheet ID is required");
-            return;
-        }
-
-        try {
-            String[] pathParts = pathInfo.split("/");
-            if (pathParts.length == 2) {
-                int timesheetId = Integer.parseInt(pathParts[1]);
-                boolean deleted = timesheetService.deleteTimesheet(timesheetId);
-                
-                if (deleted) {
-                    JsonObject responseObj = new JsonObject();
-                    responseObj.addProperty("message", "Timesheet deleted successfully");
-                    sendJsonResponse(response, HttpServletResponse.SC_OK, responseObj);
-                } else {
-                    sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                                    "Failed to delete timesheet");
-                }
-            } else {
-                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid request path");
-            }
-
-        } catch (NumberFormatException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid timesheet ID format");
-        } catch (IllegalArgumentException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                            "Database error: " + e.getMessage());
-        }
+    /**
+     * Approve a timesheet
+     */
+    public Timesheet approve(int timesheetId, int adminId) {
+        return service.approve(timesheetId, adminId);
     }
 
-    private void sendJsonResponse(HttpServletResponse response, int statusCode, Object data) throws IOException {
-        response.setStatus(statusCode);
-        response.getWriter().write(gson.toJson(data));
+    /**
+     * Reject a timesheet with a reason
+     */
+    public Timesheet reject(int timesheetId, int adminId, String reason) {
+        return service.reject(timesheetId, adminId, reason);
     }
 
-    private void sendErrorResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
-        response.setStatus(statusCode);
-        JsonObject error = new JsonObject();
-        error.addProperty("error", message);
-        response.getWriter().write(gson.toJson(error));
+    /**
+     * Submit a timesheet for a specific event
+     */
+    public Timesheet submitForEvent(int volunteerId, int eventId, String eventName) {
+        return service.submitForEvent(volunteerId, eventId, eventName);
+    }
+
+    /**
+     * Update an existing timesheet
+     */
+    public void update(Timesheet timesheet) {
+        service.update(timesheet);
+    }
+
+    /**
+     * Delete a timesheet by ID
+     */
+    public boolean delete(int timesheetId) {
+        return service.delete(timesheetId);
+    }
+
+    /**
+     * Get a list of all timesheets
+     */
+    public java.util.List<Timesheet> listAll() {
+        return service.listAll();
     }
 }

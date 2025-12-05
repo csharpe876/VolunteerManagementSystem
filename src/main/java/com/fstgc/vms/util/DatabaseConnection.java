@@ -7,11 +7,12 @@ import java.sql.SQLException;
 /**
  * Database Connection Utility
  * Manages database connections using singleton pattern
+ * Updated for Spring Boot standalone application
  */
 public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://localhost:3306/volunteer_management_system?useSSL=false&serverTimezone=UTC";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "password"; // Change this to your MySQL password
+    private static final String PASSWORD = ""; // XAMPP default is empty password
     
     private static Connection connection = null;
 

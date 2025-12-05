@@ -1,221 +1,180 @@
 package com.fstgc.vms.service;
 
 import com.fstgc.vms.model.Volunteer;
+import com.fstgc.vms.model.enums.BadgeTier;
+import com.fstgc.vms.model.enums.VolunteerStatus;
+import com.fstgc.vms.repository.AttendanceRepository;
 import com.fstgc.vms.repository.VolunteerRepository;
-import org.mindrot.jbcrypt.BCrypt;
-
-import java.sql.SQLException;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
-/**
- * Volunteer Service Layer
- * Contains business logic for volunteer operations
- */
 public class VolunteerService {
-    private final VolunteerRepository volunteerRepository;
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-        "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
-    );
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^[+]?[0-9]{10,15}$");
+    private final VolunteerRepository repository;
+    private AttendanceRepository attendanceRepository;
 
-    public VolunteerService() {
-        this.volunteerRepository = new VolunteerRepository();
+    public VolunteerService(VolunteerRepository repository) {
+        this.repository = repository;
+    }
+    
+    // Optional setter for attendance repository to enable tier calculation
+    public void setAttendanceRepository(AttendanceRepository attendanceRepository) {
+        this.attendanceRepository = attendanceRepository;
     }
 
-    /**
-     * Register a new volunteer
-     * @param volunteer Volunteer object to register
-     * @return Registered volunteer with ID
-     * @throws IllegalArgumentException if validation fails
-     * @throws SQLException if database error occurs
-     */
-    public Volunteer registerVolunteer(Volunteer volunteer) throws IllegalArgumentException, SQLException {
-        // Validate volunteer data
-        validateVolunteer(volunteer);
+    public Volunteer register(Volunteer volunteer) {
+        // Validate email format
+        if (!isValidEmail(volunteer.getEmail())) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
         
         // Check if email already exists
-        Volunteer existingVolunteer = volunteerRepository.findByEmail(volunteer.getEmail());
-        if (existingVolunteer != null) {
-            throw new IllegalArgumentException("Email already registered");
-        }
+        repository.findByEmail(volunteer.getEmail()).ifPresent(existing -> {
+            throw new IllegalArgumentException("Email already exists");
+        });
         
-        // Hash password if provided
-        if (volunteer.getPasswordHash() != null && !volunteer.getPasswordHash().isEmpty()) {
-            String hashedPassword = BCrypt.hashpw(volunteer.getPasswordHash(), BCrypt.gensalt());
-            volunteer.setPasswordHash(hashedPassword);
-        }
-        
-        // Save volunteer
-        return volunteerRepository.save(volunteer);
-    }
-
-    /**
-     * Get all active volunteers
-     * @return List of active volunteers
-     * @throws SQLException if database error occurs
-     */
-    public List<Volunteer> getAllActiveVolunteers() throws SQLException {
-        return volunteerRepository.findAll();
-    }
-
-    /**
-     * Get volunteer by ID
-     * @param volunteerId Volunteer ID
-     * @return Volunteer object
-     * @throws SQLException if database error occurs
-     */
-    public Volunteer getVolunteerById(int volunteerId) throws SQLException {
-        Volunteer volunteer = volunteerRepository.findById(volunteerId);
-        if (volunteer == null) {
-            throw new IllegalArgumentException("Volunteer not found with ID: " + volunteerId);
-        }
-        return volunteer;
-    }
-
-    /**
-     * Get volunteer by email
-     * @param email Volunteer email
-     * @return Volunteer object
-     * @throws SQLException if database error occurs
-     */
-    public Volunteer getVolunteerByEmail(String email) throws SQLException {
-        Volunteer volunteer = volunteerRepository.findByEmail(email);
-        if (volunteer == null) {
-            throw new IllegalArgumentException("Volunteer not found with email: " + email);
-        }
-        return volunteer;
-    }
-
-    /**
-     * Update volunteer information
-     * @param volunteer Volunteer object with updated information
-     * @return Updated volunteer
-     * @throws SQLException if database error occurs
-     */
-    public Volunteer updateVolunteer(Volunteer volunteer) throws SQLException {
-        // Validate volunteer data
-        validateVolunteer(volunteer);
-        
-        // Check if volunteer exists
-        Volunteer existingVolunteer = volunteerRepository.findById(volunteer.getVolunteerId());
-        if (existingVolunteer == null) {
-            throw new IllegalArgumentException("Volunteer not found");
-        }
-        
-        // Check if new email is already taken by another volunteer
-        if (!existingVolunteer.getEmail().equals(volunteer.getEmail())) {
-            Volunteer emailCheck = volunteerRepository.findByEmail(volunteer.getEmail());
-            if (emailCheck != null) {
-                throw new IllegalArgumentException("Email already in use by another volunteer");
-            }
-        }
-        
-        return volunteerRepository.update(volunteer);
-    }
-
-    /**
-     * Deactivate a volunteer
-     * @param volunteerId Volunteer ID to deactivate
-     * @return true if deactivated successfully
-     * @throws SQLException if database error occurs
-     */
-    public boolean deactivateVolunteer(int volunteerId) throws SQLException {
-        Volunteer volunteer = volunteerRepository.findById(volunteerId);
-        if (volunteer == null) {
-            throw new IllegalArgumentException("Volunteer not found");
-        }
-        return volunteerRepository.delete(volunteerId);
-    }
-
-    /**
-     * Search volunteers by name
-     * @param searchTerm Search term
-     * @return List of matching volunteers
-     * @throws SQLException if database error occurs
-     */
-    public List<Volunteer> searchVolunteers(String searchTerm) throws SQLException {
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return getAllActiveVolunteers();
-        }
-        return volunteerRepository.searchByName(searchTerm.trim());
-    }
-
-    /**
-     * Authenticate volunteer
-     * @param email Volunteer email
-     * @param password Plain text password
-     * @return Volunteer object if authentication successful
-     * @throws SQLException if database error occurs
-     */
-    public Volunteer authenticateVolunteer(String email, String password) throws SQLException {
-        Volunteer volunteer = volunteerRepository.findByEmail(email);
-        if (volunteer == null) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
-        
-        if (!volunteer.isActive()) {
-            throw new IllegalArgumentException("Account is inactive");
-        }
-        
-        if (volunteer.getPasswordHash() == null || !BCrypt.checkpw(password, volunteer.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
-        
-        return volunteer;
-    }
-
-    /**
-     * Get total volunteer count
-     * @return Number of active volunteers
-     * @throws SQLException if database error occurs
-     */
-    public int getTotalVolunteerCount() throws SQLException {
-        return volunteerRepository.getVolunteerCount();
-    }
-
-    /**
-     * Validate volunteer data
-     * @param volunteer Volunteer to validate
-     * @throws IllegalArgumentException if validation fails
-     */
-    private void validateVolunteer(Volunteer volunteer) throws IllegalArgumentException {
-        if (volunteer == null) {
-            throw new IllegalArgumentException("Volunteer object cannot be null");
-        }
-        
-        if (volunteer.getFirstName() == null || volunteer.getFirstName().trim().isEmpty()) {
-            throw new IllegalArgumentException("First name is required");
-        }
-        
-        if (volunteer.getLastName() == null || volunteer.getLastName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Last name is required");
-        }
-        
-        if (volunteer.getEmail() == null || !isValidEmail(volunteer.getEmail())) {
-            throw new IllegalArgumentException("Valid email is required");
-        }
-        
-        if (volunteer.getPhone() != null && !volunteer.getPhone().isEmpty() && !isValidPhone(volunteer.getPhone())) {
+        // Validate phone number if provided
+        if (volunteer.getPhone() != null && !isValidPhone(volunteer.getPhone())) {
             throw new IllegalArgumentException("Invalid phone number format");
         }
+        
+        volunteer.setStatus(VolunteerStatus.ACTIVE);
+        return repository.save(volunteer);
+    }
+    
+    public Volunteer register(Volunteer volunteer, String modifiedBy) {
+        // Validate email format
+        if (!isValidEmail(volunteer.getEmail())) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        
+        // Check if email already exists
+        repository.findByEmail(volunteer.getEmail()).ifPresent(existing -> {
+            throw new IllegalArgumentException("Email already exists");
+        });
+        
+        // Validate phone number if provided
+        if (volunteer.getPhone() != null && !isValidPhone(volunteer.getPhone())) {
+            throw new IllegalArgumentException("Invalid phone number format");
+        }
+        
+        volunteer.setStatus(VolunteerStatus.ACTIVE);
+        volunteer.setLastModifiedBy(modifiedBy);
+        volunteer.setLastModifiedDate(java.time.LocalDateTime.now());
+        return repository.save(volunteer);
     }
 
-    /**
-     * Validate email format
-     * @param email Email to validate
-     * @return true if valid
-     */
     private boolean isValidEmail(String email) {
-        return email != null && EMAIL_PATTERN.matcher(email).matches();
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     }
 
-    /**
-     * Validate phone format
-     * @param phone Phone to validate
-     * @return true if valid
-     */
     private boolean isValidPhone(String phone) {
-        return phone != null && PHONE_PATTERN.matcher(phone).matches();
+        return phone != null && phone.matches("^\\+?[0-9\\s-()]{10,}$");
+    }
+
+    public Volunteer update(Volunteer v) {
+        // Check if email is being changed to an existing email (excluding current volunteer)
+        if (v.getEmail() != null && !isValidEmail(v.getEmail())) {
+            throw new IllegalArgumentException("Invalid email");
+        }
+        repository.findByEmail(v.getEmail()).ifPresent(existing -> {
+            if (existing.getId() != v.getId()) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+        });
+        if (v.getPhone() != null && !isValidPhone(v.getPhone())) {
+            throw new IllegalArgumentException("Invalid phone");
+        }
+        return repository.update(v);
+    }
+    
+    public Volunteer update(Volunteer v, String modifiedBy) {
+        // Check if email is being changed to an existing email (excluding current volunteer)
+        if (v.getEmail() != null && !isValidEmail(v.getEmail())) {
+            throw new IllegalArgumentException("Invalid email");
+        }
+        repository.findByEmail(v.getEmail()).ifPresent(existing -> {
+            if (existing.getId() != v.getId()) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+        });
+        if (v.getPhone() != null && !isValidPhone(v.getPhone())) {
+            throw new IllegalArgumentException("Invalid phone");
+        }
+        v.setLastModifiedBy(modifiedBy);
+        v.setLastModifiedDate(java.time.LocalDateTime.now());
+        return repository.update(v);
+    }
+    
+    public boolean deactivate(int id) { return repository.findById(id).map(v -> { v.setStatus(VolunteerStatus.INACTIVE); repository.update(v); return true; }).orElse(false); }
+    
+    public boolean deactivate(int id, String modifiedBy) { 
+        return repository.findById(id).map(v -> { 
+            v.setStatus(VolunteerStatus.INACTIVE); 
+            v.setLastModifiedBy(modifiedBy);
+            v.setLastModifiedDate(java.time.LocalDateTime.now());
+            repository.update(v); 
+            return true; 
+        }).orElse(false); 
+    }
+    public Optional<Volunteer> get(int id) { return repository.findById(id); }
+    
+    public Optional<Volunteer> getByEmail(String email) { return repository.findByEmail(email); }
+
+    public List<Volunteer> list() { return repository.findAll(); }
+    public void delete(int id) { repository.delete(id); }
+    
+    /**
+     * Calculate and update volunteer's achievement tier based on total hours worked
+     * Tiers: Bronze (10+ hours), Silver (50+ hours), Gold (100+ hours), Platinum (200+ hours)
+     */
+    public void updateVolunteerTier(int volunteerId) {
+        if (attendanceRepository == null) {
+            return; // Cannot calculate tier without attendance data
+        }
+        
+        Optional<Volunteer> volunteerOpt = repository.findById(volunteerId);
+        if (volunteerOpt.isEmpty()) {
+            return;
+        }
+        
+        Volunteer volunteer = volunteerOpt.get();
+        
+        // Calculate total hours from attendance records
+        double totalHours = attendanceRepository.findByVolunteer(volunteerId).stream()
+            .filter(a -> a.getCheckInTime() != null && a.getCheckOutTime() != null)
+            .mapToDouble(a -> a.getHoursWorked())
+            .sum();
+        
+        // Determine tier based on hours
+        BadgeTier newTier = null;
+        if (totalHours >= 200) {
+            newTier = BadgeTier.PLATINUM;
+        } else if (totalHours >= 100) {
+            newTier = BadgeTier.GOLD;
+        } else if (totalHours >= 50) {
+            newTier = BadgeTier.SILVER;
+        } else if (totalHours >= 10) {
+            newTier = BadgeTier.BRONZE;
+        }
+        
+        // Update volunteer's tier if changed
+        if (newTier != volunteer.getCurrentTier()) {
+            volunteer.setCurrentTier(newTier);
+            repository.update(volunteer);
+        }
+    }
+    
+    /**
+     * Get total hours worked by volunteer from attendance records
+     */
+    public double getTotalHoursWorked(int volunteerId) {
+        if (attendanceRepository == null) {
+            return 0.0;
+        }
+        
+        return attendanceRepository.findByVolunteer(volunteerId).stream()
+            .filter(a -> a.getCheckInTime() != null && a.getCheckOutTime() != null)
+            .mapToDouble(a -> a.getHoursWorked())
+            .sum();
     }
 }
